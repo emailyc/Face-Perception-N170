@@ -1,0 +1,110 @@
+# ------------------------------- PCL Part ------------------------------
+
+# Make a 2-d array with all our stimulus arrays
+array<bitmap> practice_pics_array[0][0];
+practice_pics_array.add( EMOTION_PRACTICE );
+practice_pics_array.add( IDENTITY_PRACTICE );
+
+# Now randomize the order_p of stimuli in each subarray
+loop
+    int i = 1
+until
+    i > practice_pics_array.count()
+begin
+    practice_pics_array[i].shuffle();
+    i = i + 1;
+end;
+
+# Now create an order_p to step through the arrays
+array<int> order_p[practice_pics_array.count()];
+order_p.fill( 1, practice_pics_array.count(), 1, 1);
+order_p.shuffle();
+
+# Now use that order to loop through the stimulus arrays
+loop
+    int i = 1
+until
+	i > order_p.count()
+begin
+	int current_block = order_p[i]; #current block_index
+
+	#No need to set block instruction pictures
+	
+	Block_Begin_pic.insert_part( 1, space, CENTRE, -OFFSET_Y - OFFSET_Y );
+	
+	bitmap just_a_bitmap_file_p = practice_pics_array[current_block][1];
+	int third_last_item_p = 3;
+	string condition_p = get_path_component( just_a_bitmap_file_p, third_last_item_p );
+	string path_to_target_p = condition_p + "\\target";
+	
+	term.print( condition_p );
+
+	if (condition_p == "Identity_condition_practice") then
+		
+		Block_Begin_pic.insert_part( 2, dick_targets, CENTRE, -OFFSET_Y );
+		Block_Begin_pic.insert_part( 3, id_pratice_target_1, CENTRE, CENTRE  );
+		Block_Begin_pic.insert_part( 4, id_pratice_target_2, OFFSET_X, CENTRE );
+		Block_Begin_pic.insert_part( 5, id_pratice_target_3, -OFFSET_X, CENTRE );
+		
+	elseif (condition_p == "Emotion_condition_practice") then
+		
+		Block_Begin_pic.insert_part( 2, happy_dick, CENTRE, -OFFSET_Y );
+		Block_Begin_pic.insert_part( 3, emotion_pratice_targe_1, CENTRE, CENTRE  );
+		Block_Begin_pic.insert_part( 4, emotion_pratice_not_targe_2, OFFSET_X, CENTRE );
+		Block_Begin_pic.insert_part( 5, emotion_pratice_not_targe_3, -OFFSET_X, CENTRE );
+		
+	end;
+	Block_Begin_event.set_event_code( condition_p + "_number:" + string( i ) );
+	
+	Block_Begin.present();
+	Block_Begin_pic.clear(); #Clear stimuli on block begin page
+	fixation_trial.present(); #begin block
+	
+	# Loop through all stimuli in that subarray (condition_p)
+	loop
+		int current_stimuli_index = 1
+	until
+		current_stimuli_index > practice_pics_array[current_block].count()
+	begin
+	  # Set stimulus
+		bitmap current_stimuli_p = practice_pics_array[current_block][current_stimuli_index]; #collect bitmap from the 2-D array
+		test_pic.set_part( 1, current_stimuli_p );
+		
+		#Set response button
+		int second_last_index_p = 2; #we want the target, non_target, non_target_target names. Whcih is one level above the bitmap files. Hence second last. 
+		string target_directory_name_p = get_path_component( current_stimuli_p, second_last_index_p ); #targe or non_targe or non_target_target?
+		term.print( target_directory_name_p + ", " );
+		if target_directory_name_p == "target" then
+			test_event.set_target_button( 1 );
+		else
+			test_event.set_target_button( 0 ); 
+			test_event.set_response_active( true );
+		end;
+		
+		#NO need to set event port code
+	  
+		#Set stim code
+		string stim_code_p = current_stimuli_p.filename();
+		stim_code_p = stim_code_p.replace( stimulus_directory, "" ); #Replace full path with relative path starting at the stimulus_directory
+		test_event.set_event_code( stim_code_p  );
+	
+		# Present trial
+		test_trial.present();
+		
+		#Present blank
+		int base_blank_p = 400;
+		int jitter_p = 100;
+		blank_trial.set_duration( base_blank_p + random( -jitter_p, jitter_p ) ); #Jittering blank page duration
+		blank_trial.present();
+	  
+		current_stimuli_index = current_stimuli_index + 1;
+	end;
+	
+	
+	break_trial.present();
+	ready_trial.present();
+	
+	
+   i = i + 1;
+
+end;

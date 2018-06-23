@@ -1,0 +1,118 @@
+#CONSTANTS
+int OFFSET_X = 350;
+int OFFSET_Y = 250;
+int CENTRE = 0;
+
+# Make a 2-d array with all our stimulus arrays
+array<bitmap> pics_array[0][0];
+pics_array.add( HAPPY );
+pics_array.add( HAPPY );
+pics_array.add( SAD );
+pics_array.add( SAD );
+pics_array.add( NEUTRAL );
+pics_array.add( NEUTRAL );
+pics_array.add( IDENTITY );
+pics_array.add( IDENTITY );
+
+# Now randomize the order of stimuli in each subarray
+loop
+    int i = 1
+until
+    i > pics_array.count()
+begin
+    pics_array[i].shuffle();
+    i = i + 1;
+end;
+
+# Now create an order to step through the arrays
+array<int> order[pics_array.count()];
+order.fill( 1, pics_array.count(), 1, 1);
+order.shuffle();
+#term.print( pics_array[1].count() );
+
+# Now use that order to loop through the stimulus arrays
+loop
+    int i = 1
+until
+	i > order.count()
+    #i > 1
+begin
+	int current_block = order[i]; #current block_index
+
+
+	#Set block instruction pictures
+	Block_Begin_pic.insert_part( 1, target, CENTRE, -OFFSET_Y );
+	Block_Begin_pic.insert_part( 2, space, CENTRE, -OFFSET_Y - 300 );
+	
+	#Obtain name of current condition
+	array<string> path_component[0];
+	string condition_path = pics_array[current_block][1].filename();
+	condition_path.split("\\", path_component);
+	int third_last_index = path_component.count() - 2;
+	string condition = path_component[third_last_index];
+	string path_to_target = condition + "\\target";
+	term.print( condition );
+	if (condition == "identity_condition") then
+		
+		Block_Begin_pic.insert_part( 3, id_target_1, CENTRE, CENTRE );
+		
+		Block_Begin_pic.insert_part( 4, id_target_2, OFFSET_X, CENTRE );
+		
+		Block_Begin_pic.insert_part( 5, id_target_3, -OFFSET_X, CENTRE );
+		
+		Block_Begin_pic.set_part( 1, targets );
+		
+	elseif (condition == "happy_condition") then
+		Block_Begin_pic.insert_part( 3, happy_target, CENTRE, CENTRE);
+	elseif (condition == "sad_condition") then
+		Block_Begin_pic.insert_part( 3, sad_target, CENTRE, CENTRE);
+	elseif (condition == "neutral_condition") then
+		Block_Begin_pic.insert_part( 3, neutral_target, CENTRE, CENTRE);
+	end;
+	Block_Begin_event.set_event_code( condition + "_number:" + string( i ) );
+	
+	Block_Begin.present();
+	Block_Begin_pic.clear(); #Clear stimuli on block begin page
+	fixation_trial.present(); #begin block
+	
+	# Loop through all stimuli in that subarray (condition)
+	loop
+		int current_stimuli = 1
+	until
+		current_stimuli > pics_array[current_block].count()
+	begin
+	  # Set stimulus
+		test_pic.set_part( 1, pics_array[current_block][current_stimuli] );
+		string stim_code = pics_array[current_block][current_stimuli].filename();
+		stim_code = stim_code.replace( stimulus_directory, "" );
+		test_event.set_event_code( stim_code );
+		
+		#Set resoonse button
+		int second_last_index = path_component.count() - 1;
+		if path_component[second_last_index] == "target" then
+			test_event.set_target_button( 1 );
+		else
+			test_event.set_target_button( 3 );
+		end;
+	  
+		# Present trial
+		test_trial.present();
+		stimulus_data last = stimulus_manager.last_stimulus_data();
+		term.print(  last.event_code() );
+
+		
+		#Present blank
+		blank_trial.set_duration( 400 + random( -100, 100 ) ); #Jittering blank page duration
+		blank_trial.present();
+	  
+		current_stimuli = current_stimuli + 1;
+	end;
+	
+	if i <= order.count() then
+		break_trial.present();
+		ready_trial.present();
+	end;
+	
+   i = i + 1;
+
+end;

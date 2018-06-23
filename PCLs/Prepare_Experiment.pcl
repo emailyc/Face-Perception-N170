@@ -1,0 +1,20 @@
+#------- Load Conditions -------
+array<string> CONDITIONS[] = {
+"identity_condition", 
+"happy_condition", 
+"neutral_condition", 
+"sad_condition"
+};
+
+array<string> BLOCKS[0];
+BLOCKS.append( CONDITIONS );
+BLOCKS.append( CONDITIONS );
+BLOCKS.shuffle(); #Shuffle Conditions
+
+array<string> TARGET_TYPES[] = {
+"nontarget", 
+"nontarget_target", 
+"target" 
+};
+
+

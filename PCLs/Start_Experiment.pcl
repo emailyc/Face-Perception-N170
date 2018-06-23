@@ -1,0 +1,11 @@
+#------- Start Experiment PCL -------
+welcome_page.present();
+
+instruction_trial.present();
+instruction_pic.set_part( 1, instruction_2 );
+instruction_pic.set_part( 2, enter_practice );
+instruction_pic.insert_part( 3, id_pratice_target_2, CENTRE, CENTRE - 50 );
+instruction_pic.insert_part( 3, instruction_3, CENTRE, CENTRE - 270 );
+#instruction_trial.present();
+
+ready_trial.present();
